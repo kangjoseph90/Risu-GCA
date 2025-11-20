@@ -1,9 +1,9 @@
 {
-  "name": "my-plugin",
-  "version": "1.0.0",
+  "name": "risu-gca",
+  "version": "0.1.0",
   "description": "RisuAI Plugin using Svelte, TypeScript, and Tailwind CSS",
   "type": "module",
-  "main": "dist/my-plugin.js",
+  "main": "dist/risu-gca.js",
   "scripts": {
     "build": "vite build"
   },
