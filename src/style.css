@@ -1,0 +1,4 @@
+/* Use layers to avoid style conflicts */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
