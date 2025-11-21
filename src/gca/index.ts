@@ -3,6 +3,7 @@ import { RisuAPI } from '../api';
 import type { NativeFetchArgs, GlobalFetchArgs, GlobalFetchResult, PluginV2ProviderArgument } from '../api';
 import { PROJECT_ID, SERVICE_TIER, OPT_OUT } from '../plugin';
 import { Logger } from '../shared/logger';
+import { eventEmitter, AppEvent } from '../shared/events';
 
 const CODE_ASSIST_ENDPOINT = 'https://cloudcode-pa.googleapis.com/v1internal';
 
@@ -10,6 +11,11 @@ export class GCAManager {
     private static projectId: string | undefined;
     private static serviceTier: string | undefined;
     private static optOut: boolean | undefined;
+
+    static {
+        eventEmitter.on(AppEvent.USER_LOGOUT, () => this.clearCache());
+        eventEmitter.on(AppEvent.BACKUP_RESTORE, () => this.clearCache());
+    }
 
     /**
      * Ensures the user is initialized for GCA (onboarded, project ID loaded, opt-out checked).
@@ -131,6 +137,11 @@ export class GCAManager {
         };
     }
 
+    static clearCache(): void {
+        this.projectId = undefined;
+        this.serviceTier = undefined;
+        this.optOut = undefined;
+    }
 
     // Helper for fetch with Auth
     private static async fetchGCA(path: string, body: any, method: string = 'POST'): Promise<any> {

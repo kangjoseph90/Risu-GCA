@@ -3,6 +3,7 @@ import { Logger } from "./logger";
 import { RisuAPI } from "../api";
 import { ModelManager } from "../model"
 import { downloadFile, readFileAsText } from "../shared/util";
+import { AppEvent, eventEmitter } from "./events";
 
 interface BackupData {
     version: string;
@@ -112,7 +113,7 @@ export class BackupManager {
             }
         }
         
-        ModelManager.init();
+        eventEmitter.emit(AppEvent.BACKUP_RESTORE);
     }
 
     static async hasBackup(): Promise<boolean> {

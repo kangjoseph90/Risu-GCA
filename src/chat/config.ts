@@ -39,7 +39,7 @@ export function getGenerationConfig(params: ModelParameters): any {
 
     generationConfig.thinkingConfig = { includeThoughts: true };
     if (params.thinking_level) generationConfig.thinkingConfig.thinkingLevel = params.thinking_level;
-    if (params.thinking_tokens) generationConfig.thinkingConfig.thinkingTokens = params.thinking_tokens;
+    if (params.thinking_tokens) generationConfig.thinkingConfig.thinkingBudget = params.thinking_tokens;
     if (params.media_resolution) generationConfig.mediaResolution = params.media_resolution;
     if (params.stop_sequences) generationConfig.stopSequences = params.stop_sequences;
 

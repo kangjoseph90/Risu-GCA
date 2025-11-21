@@ -10,6 +10,8 @@ import {
 import { RisuAPI } from "../api";
 import { Logger } from "../shared/logger";
 import { prompt } from "../ui/popup";
+import { GCAManager } from "../gca";
+import { eventEmitter, AppEvent } from "../shared/events";
 
 const CLIENT_ID =
   '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
@@ -22,6 +24,11 @@ const SCOPES = [
 
 export class AuthManager {
     private static userProfileCache: any = null;
+
+    static {
+        eventEmitter.on(AppEvent.BACKUP_RESTORE, () => this.userProfileCache = null);
+        eventEmitter.on(AppEvent.USER_LOGOUT, () => this.userProfileCache = null);
+    }
 
     static async getAccessToken(): Promise<string> {
         if (!this.isLoggedIn()) {
@@ -191,6 +198,9 @@ export class AuthManager {
         RisuAPI.setArg(PROJECT_ID, '');
         RisuAPI.setArg(SERVICE_TIER, '');
         RisuAPI.setArg(OPT_OUT, 0);
+
+        // Emit logout event
+        eventEmitter.emit(AppEvent.USER_LOGOUT);
     }
 
     static async fetchUserProfile(): Promise<any> {
