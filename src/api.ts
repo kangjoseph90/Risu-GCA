@@ -65,6 +65,11 @@ export type PluginV2ProviderOptions = {
     tokenizerFunc?: (content: string) => number[] | Promise<number[]>
 }
 
+export type PluginV2ProviderResult = {
+    success: boolean
+    content: string | ReadableStream
+}
+
 type EditFunction = (content: string) => string | Promise<string>
 
 enum ScriptMode {
@@ -160,7 +165,7 @@ export class RisuAPI {
     static setChar(char: any) {
         rawAPI.setChar(char);
     }
-    static addProvider(name: string, func: (arg: PluginV2ProviderArgument, abortSignal?: AbortSignal) => Promise<{ success: boolean, content: string }>, options?: PluginV2ProviderOptions) {
+    static addProvider(name: string, func: (arg: PluginV2ProviderArgument, abortSignal?: AbortSignal) => Promise<PluginV2ProviderResult>, options?: PluginV2ProviderOptions) {
         rawAPI.addProvider(name, func, options);
     }
     static addRisuScriptHandler(mode: ScriptMode, func: EditFunction) {

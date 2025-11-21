@@ -1,8 +1,8 @@
 import { PLUGIN_TITLE, getAllArgNames, RISU_ARGS } from "../plugin";
-import { Logger } from "../logger";
+import { Logger } from "./logger";
 import { RisuAPI } from "../api";
-import { ModelManager } from "./model"
-import { downloadFile, readFileAsText } from "../util";
+import { ModelManager } from "../model"
+import { downloadFile, readFileAsText } from "../shared/util";
 
 interface BackupData {
     version: string;

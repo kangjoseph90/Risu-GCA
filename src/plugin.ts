@@ -1,14 +1,13 @@
-export { 
-    PLUGIN_TITLE, 
+export {
+    PLUGIN_TITLE,
     PLUGIN_VERSION,
-    PLUGIN_NAME, 
-    RISU_ARGS, 
+    PLUGIN_NAME,
+    RISU_ARGS,
     RisuArgType,
     IS_LOGGED_IN,
     ACCESS_TOKEN,
     ACCESS_TOKEN_EXPIRES,
     REFRESH_TOKEN,
-    REFRESH_TOKEN_EXPIRES,
     PROJECT_ID,
     SERVICE_TIER,
     OPT_OUT,
@@ -26,7 +25,7 @@ interface RisuArgs {
 
 // Plugin Info
 const PLUGIN_TITLE = 'risu-gca'
-const PLUGIN_VERSION = 'v0.1.0' 
+const PLUGIN_VERSION = 'v0.1.0'
 const PLUGIN_NAME = `${PLUGIN_TITLE}-${PLUGIN_VERSION}`
 
 // Argument Name Definitions
@@ -34,7 +33,6 @@ const IS_LOGGED_IN = 'is_logged_in'
 const ACCESS_TOKEN = 'access_token'
 const ACCESS_TOKEN_EXPIRES = 'access_token_expires'
 const REFRESH_TOKEN = 'refresh_token'
-const REFRESH_TOKEN_EXPIRES = 'refresh_token_expires'
 const PROJECT_ID = 'project_id'
 const SERVICE_TIER = 'service_tier'
 const OPT_OUT = 'opt_out'
@@ -46,7 +44,6 @@ const RISU_ARGS: RisuArgs = {
     [ACCESS_TOKEN]: RisuArgType.String,
     [ACCESS_TOKEN_EXPIRES]: RisuArgType.String,
     [REFRESH_TOKEN]: RisuArgType.String,
-    [REFRESH_TOKEN_EXPIRES]: RisuArgType.String,
     [PROJECT_ID]: RisuArgType.String,
     [SERVICE_TIER]: RisuArgType.String,
     [OPT_OUT]: RisuArgType.Int,

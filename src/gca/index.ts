@@ -1,12 +1,15 @@
-import { AuthManager } from './auth';
+import { AuthManager } from '../auth';
 import { RisuAPI } from '../api';
 import type { NativeFetchArgs, GlobalFetchArgs, GlobalFetchResult, PluginV2ProviderArgument } from '../api';
 import { PROJECT_ID, SERVICE_TIER, OPT_OUT } from '../plugin';
+import { Logger } from '../shared/logger';
 
 const CODE_ASSIST_ENDPOINT = 'https://cloudcode-pa.googleapis.com/v1internal';
 
 export class GCAManager {
     private static projectId: string | undefined;
+    private static serviceTier: string | undefined;
+    private static optOut: boolean | undefined;
 
     /**
      * Ensures the user is initialized for GCA (onboarded, project ID loaded, opt-out checked).
@@ -14,23 +17,32 @@ export class GCAManager {
      */
     static async ensureInitialized(): Promise<string> {
         // 1. Check memory cache
-        if (this.projectId) return this.projectId;
+        if (this.projectId) {
+            // Ensure other fields are loaded from storage if missing in memory
+            if (!this.serviceTier) this.serviceTier = RisuAPI.getArg(SERVICE_TIER) as string;
+            if (this.optOut === undefined) this.optOut = (RisuAPI.getArg(OPT_OUT) as number) === 1;
+            return this.projectId;
+        }
 
         // 2. Check persistent storage
         const storedProjectId = RisuAPI.getArg(PROJECT_ID) as string;
         if (storedProjectId) {
             this.projectId = storedProjectId;
+            this.serviceTier = RisuAPI.getArg(SERVICE_TIER) as string;
+            this.optOut = (RisuAPI.getArg(OPT_OUT) as number) === 1;
+
             // Even if we have project ID, we might want to check opt-out status if not set
-            if ((RisuAPI.getArg(OPT_OUT) as number) !== 1) {
-                 // Run in background to not block
-                 this.checkAndOptOutDataCollection().catch(console.error);
+            if (!this.optOut) {
+                // Run in background to not block
+                this.checkAndOptOutDataCollection().catch((e) => Logger.error(e));
             }
             return storedProjectId;
         }
 
+
         // 3. Initialize via API
         await this.initializeUser();
-        
+
         if (!this.projectId) {
             throw new Error("Failed to initialize Google Code Assist project ID.");
         }
@@ -39,7 +51,7 @@ export class GCAManager {
 
     private static async initializeUser(): Promise<void> {
         // 1. loadCodeAssist to get status
-        const loadData = await this.fetchGCA(`${CODE_ASSIST_ENDPOINT}:loadCodeAssist`, {
+        const loadData = await this.fetchGCA('loadCodeAssist', {
             metadata: {
                 ideType: 'IDE_UNSPECIFIED',
                 platform: 'PLATFORM_UNSPECIFIED',
@@ -52,7 +64,7 @@ export class GCAManager {
 
         // 2. Onboarding if needed (if currentTier is missing)
         if (!loadData.currentTier) {
-            console.log('User not onboarded. Starting onboarding...');
+            Logger.log('User not onboarded. Starting onboarding...');
             const defaultTier = loadData.allowedTiers?.find((t: any) => t.isDefault);
             tierId = defaultTier?.id || 'free-tier';
 
@@ -69,7 +81,7 @@ export class GCAManager {
             // Polling for LRO completion
             let onboarded = false;
             while (!onboarded) {
-                const lro = await this.fetchGCA(`${CODE_ASSIST_ENDPOINT}:onboardUser`, onboardReq);
+                const lro = await this.fetchGCA('onboardUser', onboardReq);
                 if (lro.done) {
                     onboarded = true;
                     pid = lro.response?.cloudaicompanionProject?.id;
@@ -85,6 +97,7 @@ export class GCAManager {
             RisuAPI.setArg(PROJECT_ID, pid);
         }
         if (tierId) {
+            this.serviceTier = tierId;
             RisuAPI.setArg(SERVICE_TIER, tierId);
         }
 
@@ -94,23 +107,34 @@ export class GCAManager {
 
     private static async checkAndOptOutDataCollection(): Promise<void> {
         try {
-            const settings = await this.fetchGCA(`${CODE_ASSIST_ENDPOINT}:getCodeAssistGlobalUserSetting`, null, 'GET');
-            
+            const settings = await this.fetchGCA('getCodeAssistGlobalUserSetting', null, 'GET');
+
             if (settings.freeTierDataCollectionOptin == true) {
-                console.log('Opting out of data collection...');
-                await this.fetchGCA(`${CODE_ASSIST_ENDPOINT}:setCodeAssistGlobalUserSetting`, {
+                Logger.log('Opting out of data collection...');
+                await this.fetchGCA('setCodeAssistGlobalUserSetting', {
                     freeTierDataCollectionOptin: false
                 });
             }
             // Mark as opted out in our storage
+            this.optOut = true;
             RisuAPI.setArg(OPT_OUT, 1);
         } catch (e) {
-            console.warn('Failed to update data collection settings:', e);
+            Logger.warn('Failed to update data collection settings:', e);
         }
     }
 
+    static getCachedInfo() {
+        return {
+            projectId: this.projectId,
+            serviceTier: this.serviceTier,
+            optOut: this.optOut
+        };
+    }
+
+
     // Helper for fetch with Auth
-    private static async fetchGCA(url: string, body: any, method: string = 'POST'): Promise<any> {
+    private static async fetchGCA(path: string, body: any, method: string = 'POST'): Promise<any> {
+        const url = `${CODE_ASSIST_ENDPOINT}:${path}`;
         const token = await AuthManager.getAccessToken();
         const options: RequestInit = {
             method: method,
@@ -129,17 +153,17 @@ export class GCAManager {
         if (!res.ok) {
             const text = await res.text();
             throw new Error(`GCA API Error (${res.status}): ${text}`);
-        }
+        } 
         return res.json();
     }
 
-    static async nativeFetchGCA(method: string, args: NativeFetchArgs): Promise<Response> {
-        const url = `${CODE_ASSIST_ENDPOINT}:${method}`;
+    static async nativeFetchGCA(path: string, args: NativeFetchArgs): Promise<Response> {
+        const url = `${CODE_ASSIST_ENDPOINT}:${path}`;
         const token = await AuthManager.getAccessToken();
         const headers = { ...args.headers };
         headers['Authorization'] = `Bearer ${token}`;
         headers['User-Agent'] = 'GeminiCLI/1.0';
-        
+
         let body = args.body;
 
         const projectId = await this.ensureInitialized();
@@ -149,9 +173,9 @@ export class GCAManager {
             body = JSON.stringify(parsed);
         } else {
             // If body is ArrayBuffer or Uint8Array, we can't easily inject
-            console.warn('Cannot inject project ID into non-string body');
+            Logger.warn('Cannot inject project ID into non-string body');
         }
-        
+
         return RisuAPI.nativeFetch(url, {
             ...args,
             body,
@@ -159,20 +183,20 @@ export class GCAManager {
         });
     }
 
-    static async risuFetchGCA(method: string, args: GlobalFetchArgs = {}): Promise<GlobalFetchResult> {
-        const url = `${CODE_ASSIST_ENDPOINT}:${method}`;
+    static async risuFetchGCA(path: string, args: GlobalFetchArgs = {}): Promise<GlobalFetchResult> {
+        const url = `${CODE_ASSIST_ENDPOINT}:${path}`;
         const token = await AuthManager.getAccessToken();
         const headers = { ...args.headers };
         headers['Authorization'] = `Bearer ${token}`;
         headers['User-Agent'] = 'GeminiCLI/1.0';
 
         let body = args.body;
-        
+
         const projectId = await this.ensureInitialized();
         if (typeof body === 'object' && body !== null) {
             body = { ...body, project: projectId };
         } else {
-            console.warn('Cannot inject project ID into non-object body');
+            Logger.warn('Cannot inject project ID into non-object body');
         }
 
         return RisuAPI.risuFetch(url, {

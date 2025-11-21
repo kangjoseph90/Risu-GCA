@@ -1,63 +1,44 @@
-import type { PluginV2ProviderArgument } from "../api";
-import { Logger } from "../logger";
-import { GCAManager } from "../manager/gca";
-import { ModelManager } from "../manager/model";
-import { RequestType } from "../types";
-import { parseRequestType } from "../util";
+import type { PluginV2ProviderArgument, PluginV2ProviderResult } from "../api";
+import { Logger } from "../shared/logger";
+import { GCAManager } from "../gca";
+import { ModelManager } from "../model";
+import { RequestType } from "../shared/types";
+import { parseRequestType } from "../shared/util";
+import { applyPluginParams, getGenerationConfig, getPluginParams, getSafetySettings } from "./config";
+import { parse } from "svelte/compiler";
+import { parseGeminiChat } from "./format";
+import { requestGenerateContent, requestGenerateStreamContent } from "./request";
+import { handleResponse, handleStreamResponse } from "./response";
 
-export async function generateContent(args: PluginV2ProviderArgument, abortSignal?: AbortSignal): Promise<{ success: boolean, content: string }> {
+export async function handleRequest(args: PluginV2ProviderArgument, abortSignal?: AbortSignal): Promise<PluginV2ProviderResult> {
     const requestType = parseRequestType(args.mode);
     const config = ModelManager.getConfig(requestType);
-    const model = config.model_id || 'gemini-2.5-flash';
 
-    Logger.log(`GCA Generate Content - Model: ${model}, Request Type: ${requestType}`);
+    const model = config.model_id;
+    const params = config.parameters;
+    const pluginParams = getPluginParams(args);
+    const newParams = applyPluginParams(params, pluginParams);
 
-    const use_stream = config.parameters.use_stream === true && requestType === RequestType.Chat;
+    const stream = newParams.use_stream === true && requestType === RequestType.Chat;
+        
+    const contents = parseGeminiChat(args.prompt_chat);
+    const generationConfig = getGenerationConfig(newParams);
+    const safetySettings = getSafetySettings();
 
-    const contents = [];
-    for (const msg of args.prompt_chat) {
-        if (msg.role === 'system') {
-            if (contents.length === 0) {
-                 contents.push({ role: 'user', parts: [{ text: msg.content }] });
-            } else {
-                 contents.push({ role: 'user', parts: [{ text: `[System Instruction]\n${msg.content}` }] });
-            }
-        } else {
-            const role = msg.role === 'assistant' ? 'model' : 'user';
-            contents.push({
-                role: role,
-                parts: [{ text: msg.content }]
-            });
-        }
-    }
-    const requestBody = {
+    const body = {
         model: model,
         request: {
             contents: contents,
-            generationConfig: {
-                maxOutputTokens: args.max_tokens,
-                temperature: args.temperature,
-                topP: args.top_p,
-                topK: args.top_k,
-            },
-        },
-    };
-
-
-    try {
-        const res = await GCAManager.risuFetchGCA('generateContent', {
-            method: 'POST',
-            body: requestBody,
-            abortSignal: abortSignal
-        }, true);
-        if (!res.ok) {
-            throw new Error(`GCA API Error (${res.status}): ${JSON.stringify(res.data)}`);
+            generationConfig: generationConfig,
+            safetySettings: safetySettings
         }
-        const content = res.data.response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        return { success: true, content: content };
-    } catch (e) {
-        Logger.error('GCA Chat Error:', e);
-        return { success: false, content: `${e}` };
     }
-    
+
+    if (stream) {
+        const res = await requestGenerateStreamContent(body, abortSignal);
+        return await handleStreamResponse(res);
+    } else {
+        const res = await requestGenerateContent(body, abortSignal);
+        return handleResponse(res);
+    }
 }

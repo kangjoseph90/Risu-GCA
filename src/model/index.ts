@@ -1,8 +1,8 @@
 
 import { RisuAPI } from '../api';
 import { MODEL_CONFIG } from '../plugin';
-import { RequestType, type ModelParameters } from '../types';
-import { debounce } from '../util';
+import { RequestType, type ModelParameters } from '../shared/types';
+import { debounce } from '../shared/util';
 
 type ModelConfig = {
     [K in RequestType]?: {
@@ -29,7 +29,17 @@ export class ModelManager {
         }
     }
 
-    static getConfig(type: RequestType) {
-        return this.config[type] || { model_id: 'gemini-2.5-flash', parameters: {} as ModelParameters };
+    static getConfig(type: RequestType): { model_id: string; parameters: ModelParameters } {
+        if (!this.config[type]) {
+            this.config[type] = { model_id: 'gemini-2.5-flash', parameters: {} as ModelParameters };
+            this.debouncedSave();
+        }
+        return this.config[type]
     }
+
+    static setConfig(type: RequestType, { model_id, parameters }: { model_id: string; parameters: ModelParameters }) {
+        this.config[type] = { model_id, parameters };
+        this.debouncedSave();
+    }
+
 }

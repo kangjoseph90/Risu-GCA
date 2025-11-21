@@ -3,13 +3,13 @@ import {
     ACCESS_TOKEN, 
     ACCESS_TOKEN_EXPIRES, 
     REFRESH_TOKEN, 
-    REFRESH_TOKEN_EXPIRES ,
     PROJECT_ID,
     SERVICE_TIER,
     OPT_OUT
 } from "../plugin";
 import { RisuAPI } from "../api";
-import { Logger } from "../logger";
+import { Logger } from "../shared/logger";
+import { prompt } from "../ui/popup";
 
 const CLIENT_ID =
   '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
@@ -21,6 +21,8 @@ const SCOPES = [
 ].join(' ');
 
 export class AuthManager {
+    private static userProfileCache: any = null;
+
     static async getAccessToken(): Promise<string> {
         if (!this.isLoggedIn()) {
             throw new Error('User is not logged in');
@@ -41,10 +43,10 @@ export class AuthManager {
 
         // Access token expired, try to refresh using Refresh Token
         try {
-            console.log('Token expired, refreshing...');
+            Logger.log('Token expired, refreshing...');
             return await this.refreshAccessToken();
         } catch (e) {
-            console.log('Refresh failed, prompting user...', e);
+            Logger.log('Refresh failed, prompting user...', e);
             // If refresh fails, request new login
             return await this.login();
         }
@@ -71,12 +73,9 @@ export class AuthManager {
                 `width=${width},height=${height},top=${top},left=${left}`
             );
 
-            setTimeout(() => {
-                const pastedUrl = window.prompt(
-                    "Google Login Steps:\n" +
-                    "1. Login in the popup window.\n" +
-                    "2. When you see 'This site can't be reached' (localhost), COPY the entire URL from the address bar.\n" +
-                    "3. PASTE the URL here:"
+            setTimeout(async () => {
+                const pastedUrl = await prompt(
+                    "Log in to Google and PASTE the full URL you were redirected to",
                 );
 
                 if (pastedUrl) {
@@ -104,7 +103,7 @@ export class AuthManager {
                             reject(new Error("Could not find valid code"));
                         }
                     } catch (e) {
-                        console.error('Login error:', e);
+                        Logger.error('Login error:', e);
                         reject(new Error(`Invalid URL or code: ${e}`));
                     }
                 } else {
@@ -180,19 +179,39 @@ export class AuthManager {
         
         if (tokens.refresh_token) {
             RisuAPI.setArg(REFRESH_TOKEN, tokens.refresh_token);
-            // Refresh tokens don't usually expire, but we can set a long date or ignore
-            RisuAPI.setArg(REFRESH_TOKEN_EXPIRES, '9999-12-31T23:59:59Z'); 
         }
     }
 
     static logout(): void {
+        this.userProfileCache = null;
         RisuAPI.setArg(IS_LOGGED_IN, 0);
         RisuAPI.setArg(ACCESS_TOKEN, '');
         RisuAPI.setArg(ACCESS_TOKEN_EXPIRES, '');
         RisuAPI.setArg(REFRESH_TOKEN, '');
-        RisuAPI.setArg(REFRESH_TOKEN_EXPIRES, '');
         RisuAPI.setArg(PROJECT_ID, '');
         RisuAPI.setArg(SERVICE_TIER, '');
         RisuAPI.setArg(OPT_OUT, 0);
+    }
+
+    static async fetchUserProfile(): Promise<any> {
+        if (this.userProfileCache) {
+            return this.userProfileCache;
+        }
+        try {
+            const token = await this.getAccessToken();
+            const res = await fetch(
+                "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (res.ok) {
+                this.userProfileCache = await res.json();
+                return this.userProfileCache;
+            }
+        } catch (e) {
+            Logger.error("Failed to fetch user profile:", e);
+        }
+        return null;
     }
 }

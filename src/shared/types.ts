@@ -9,9 +9,9 @@ export enum RequestType {
 
 export interface PluginParameters {
     frequency_penalty?: number
-    min_p?: number
     presence_penalty?: number
     repetition_penalty?: number
+    min_p?: number
     top_k?: number
     top_p?: number
     temperature?: number
@@ -20,6 +20,8 @@ export interface PluginParameters {
 
 export interface ModelParameters extends PluginParameters {
     thinking_level?: 'low' | 'medium' | 'high'
+    thinking_tokens?: number
     media_resolution?: 'media_resolution_low' | 'media_resolution_medium' | 'media_resolution_high'
+    stop_sequences?: string[]
     use_stream?: boolean
 }
