@@ -11,7 +11,8 @@ export {
     REFRESH_TOKEN_EXPIRES,
     PROJECT_ID,
     SERVICE_TIER,
-    OPT_OUT 
+    OPT_OUT,
+    MODEL_CONFIG,
 };
 
 enum RisuArgType {
@@ -37,6 +38,7 @@ const REFRESH_TOKEN_EXPIRES = 'refresh_token_expires'
 const PROJECT_ID = 'project_id'
 const SERVICE_TIER = 'service_tier'
 const OPT_OUT = 'opt_out'
+const MODEL_CONFIG = 'model_config'
 
 // Plugin Arguments Definition
 const RISU_ARGS: RisuArgs = {
@@ -48,4 +50,13 @@ const RISU_ARGS: RisuArgs = {
     [PROJECT_ID]: RisuArgType.String,
     [SERVICE_TIER]: RisuArgType.String,
     [OPT_OUT]: RisuArgType.Int,
+    [MODEL_CONFIG]: RisuArgType.String,
+}
+
+
+/**
+ * 등록된 모든 Risu Arg 이름을 배열로 반환
+ */
+export function getAllArgNames(): string[] {
+    return Object.keys(RISU_ARGS);
 }

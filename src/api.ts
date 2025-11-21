@@ -1,6 +1,6 @@
 import { PLUGIN_NAME, RISU_ARGS, RisuArgType } from './plugin'
 
-interface GlobalFetchArgs {
+export interface GlobalFetchArgs {
   plainFetchForce?: boolean;
   plainFetchDeforce?: boolean;
   body?: any;
@@ -12,14 +12,14 @@ interface GlobalFetchArgs {
   chatId?: string;
 }
 
-interface GlobalFetchResult {
+export interface GlobalFetchResult {
   ok: boolean;
   data: any;
   headers: { [key: string]: string };
   status: number;
 }
 
-interface NativeFetchArgs {
+export interface NativeFetchArgs {
     body?:string|Uint8Array|ArrayBuffer,
     headers?:{[key:string]:string},
     method?:"POST"|"GET"|"PUT"|"DELETE",
@@ -28,8 +28,27 @@ interface NativeFetchArgs {
     chatId?:string
 }
 
-type PluginV2ProviderArgument = {
-    prompt_chat: any[] // OpenAIChat[]
+export interface MultiModal{
+    type:'image'|'video'|'audio'
+    base64:string,
+    height?:number,
+    width?:number
+}
+
+export interface OpenAIChat{
+    role: 'system'|'user'|'assistant'|'function'
+    content: string
+    memo?:string
+    name?:string
+    removable?:boolean
+    attr?:string[]
+    multimodals?: MultiModal[]
+    thoughts?: string[]
+    cachePoint?: boolean
+}
+
+export type PluginV2ProviderArgument = {
+    prompt_chat: OpenAIChat[] 
     frequency_penalty: number
     min_p: number
     presence_penalty: number
@@ -41,7 +60,7 @@ type PluginV2ProviderArgument = {
     max_tokens: number
 }
 
-type PluginV2ProviderOptions = {
+export type PluginV2ProviderOptions = {
     tokenizer?: string
     tokenizerFunc?: (content: string) => number[] | Promise<number[]>
 }

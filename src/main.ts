@@ -1,21 +1,19 @@
 //@ts-ignore
 import './style.css';
-import OpenButton from './OpenButton.svelte';
 import { RisuAPI } from './api';
+import { AuthManager } from './manager/auth';
+import { ModelManager } from './manager/model';
+import { generateContent } from './chat';
 
 /* Plugin Entry */
 
-const container = document.createElement('div');
-document.body.appendChild(container);
+ModelManager.init();
 
-// Mount OpenButton component
-new OpenButton({
-    target: container,
-});
-
+RisuAPI.addProvider('[GCA] Google Code Assist', generateContent);
+//@ts-ignore
+globalThis.gca_login = AuthManager.login;
 // Cleanup OpenButton on unload
 RisuAPI.onUnload(() => {
-    if (container) {
-        container.remove();
-    }
+
 })
+

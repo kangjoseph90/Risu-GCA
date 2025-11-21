@@ -8,8 +8,11 @@
     "build": "vite build"
   },
   "dependencies": {
+    "google-auth-library": "^10.5.0",
     "lucide-svelte": "^0.548.0",
-    "svelte": "^4.2.0"
+    "open": "^11.0.0",
+    "svelte": "^4.2.0",
+    "tsx": "^4.20.6"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
