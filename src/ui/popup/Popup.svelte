@@ -106,7 +106,7 @@
 
             <!-- Body -->
             <div class="px-5 py-4 bg-zinc-900/50">
-                <p class="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">{config.message}</p>
+                <p class="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">{@html config.message}</p>
                 
                 {#if config.type === 'prompt'}
                     <input
