@@ -10,7 +10,7 @@ import { UI } from './ui';
 
 ModelManager.init();
 
-RisuAPI.addProvider('[GCA] Google Code Assist', handleRequest, { tokenizer: 'gemma' });
+RisuAPI.addProvider('[GCA] Gemini Code Assist', handleRequest, { tokenizer: 'gemma' });
 
 const ui = new UI()
 

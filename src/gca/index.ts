@@ -44,7 +44,7 @@ export class GCAManager {
         await this.initializeUser();
 
         if (!this.projectId) {
-            throw new Error("Failed to initialize Google Code Assist project ID.");
+            throw new Error("Failed to initialize Gemini Code Assist project ID.");
         }
         return this.projectId;
     }

@@ -235,7 +235,7 @@
                         Risu-GCA
                     </h2>
                     <p class="text-xs text-zinc-500 font-medium">
-                        Google Code Assist Integration
+                        Gemini Code Assist Integration
                     </p>
                 </div>
             </div>
