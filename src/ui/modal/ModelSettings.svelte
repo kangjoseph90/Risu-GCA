@@ -53,7 +53,7 @@
 <div class="max-w-3xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
     <!-- Model Selection -->
     <div class="space-y-3">
-        <label class="block text-sm font-medium text-zinc-300"
+        <label for="model-config" class="block text-sm font-medium text-zinc-300"
             >Model Configuration</label
         >
         <div class="relative group">
@@ -75,6 +75,7 @@
                 </svg>
             </div>
             <input
+                id="model-config"
                 type="text"
                 bind:value={currentModelId}
                 on:change={onConfigChange}
@@ -90,10 +91,11 @@
         <div
             class="flex items-center justify-between px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm"
         >
-            <label class="text-sm font-medium text-zinc-200"
+            <label for="stream-toggle" class="text-sm font-medium text-zinc-200"
                 >Streaming Response</label
             >
             <button
+                id="stream-toggle"
                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.use_stream
                     ? 'bg-blue-600'
                     : 'bg-zinc-700'}"
@@ -113,11 +115,12 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-zinc-300"
+                        <label for="temperature-toggle" class="text-sm font-medium text-zinc-300"
                             >Temperature</label
                         >
                         <!-- Toggle -->
                         <button
+                            id="temperature-toggle"
                             class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.temperature !==
                             undefined
                                 ? 'bg-blue-600'
@@ -167,11 +170,12 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-zinc-300"
+                        <label for="top-p-toggle" class="text-sm font-medium text-zinc-300"
                             >Top P</label
                         >
                         <!-- Toggle -->
                         <button
+                            id="top-p-toggle"
                             class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.top_p !==
                             undefined
                                 ? 'bg-blue-600'
@@ -218,11 +222,12 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-zinc-300"
+                        <label for="min-p-toggle" class="text-sm font-medium text-zinc-300"
                             >Min P</label
                         >
                         <!-- Toggle -->
                         <button
+                            id="min-p-toggle"
                             class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.min_p !==
                             undefined
                                 ? 'bg-blue-600'
@@ -269,9 +274,10 @@
         <!-- Top K -->
         <div class="space-y-2">
             <div class="flex justify-between">
-                <label class="text-sm font-medium text-zinc-300">Top K</label>
+                <label for="top-k" class="text-sm font-medium text-zinc-300">Top K</label>
             </div>
             <input
+                id="top-k"
                 type="number"
                 bind:value={currentParams.top_k}
                 on:change={onConfigChange}
@@ -282,10 +288,11 @@
         <!-- Penalties -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-300"
+                <label for="frequency-penalty" class="text-sm font-medium text-zinc-300"
                     >Frequency Penalty</label
                 >
                 <input
+                    id="frequency-penalty"
                     type="number"
                     step="0.1"
                     bind:value={currentParams.frequency_penalty}
@@ -294,10 +301,11 @@
                 />
             </div>
             <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-300"
+                <label for="presence-penalty" class="text-sm font-medium text-zinc-300"
                     >Presence Penalty</label
                 >
                 <input
+                    id="presence-penalty"
                     type="number"
                     step="0.1"
                     bind:value={currentParams.presence_penalty}
@@ -306,10 +314,11 @@
                 />
             </div>
             <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-300"
+                <label for="repetition-penalty" class="text-sm font-medium text-zinc-300"
                     >Repetition Penalty</label
                 >
                 <input
+                    id="repetition-penalty"
                     type="number"
                     step="0.1"
                     bind:value={currentParams.repetition_penalty}
@@ -338,7 +347,7 @@
                             d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                         />
                     </svg>
-                    <label class="text-sm font-medium text-zinc-200"
+                    <label for="thinking-mode" class="text-sm font-medium text-zinc-200"
                         >Thinking Configuration</label
                     >
                 </div>
@@ -390,10 +399,11 @@
 
         <!-- Media Resolution -->
         <div class="space-y-2">
-            <label class="text-sm font-medium text-zinc-300"
+            <label for="media-resolution" class="text-sm font-medium text-zinc-300"
                 >Media Resolution</label
             >
             <select
+                id="media-resolution"
                 bind:value={currentParams.media_resolution}
                 on:change={onConfigChange}
                 class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
