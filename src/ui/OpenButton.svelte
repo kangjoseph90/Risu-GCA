@@ -26,7 +26,7 @@
 >
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5"
+        class="h-6 w-6"
         fill="currentColor"
         viewBox="0 0 24 24"
     >
