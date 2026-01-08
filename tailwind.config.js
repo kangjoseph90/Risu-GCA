@@ -4,6 +4,9 @@ export default {
     './src/**/*.{js,ts,svelte}',
   ],
   important: "#risu-gca-container",
+  corePlugins: {
+    preflight: false,
+  },
   theme: {
     extend: {},
   },
