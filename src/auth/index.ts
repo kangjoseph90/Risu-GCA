@@ -68,25 +68,26 @@ export class AuthManager {
             // Use localhost redirect which is allowed for Native clients
             const redirectUri = 'http://localhost:3000/oauth2callback';
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(SCOPES)}&access_type=offline&prompt=consent`;
-            
-            const width = 600;
-            const height = 600;
-            const left = window.screen.width / 2 - width / 2;
-            const top = window.screen.height / 2 - height / 2;
-            
-            window.open(
-                authUrl,
-                'google_auth',
-                `width=${width},height=${height},top=${top},left=${left}`
-            );
+            try {
+                const width = 600;
+                const height = 600;
+                const left = window.screen.width / 2 - width / 2;
+                const top = window.screen.height / 2 - height / 2;
+                
+                window.open(
+                    authUrl,
+                    'google_auth',
+                    `width=${width},height=${height},top=${top},left=${left}`
+                );
+            } catch (e) {
+                Logger.error('Failed to open auth window', e);
+            }
 
             setTimeout(async () => {
                 const message = `Log in to Google and PASTE the full URL you were redirected to.
 
 If the window did not open, please copy the URL below and open it in your browser:
-
-<div class="p-2 bg-zinc-950 rounded border border-zinc-800 break-all select-all cursor-text font-mono text-xs my-2 text-zinc-400">${authUrl}</div>`;
-
+<a href="${authUrl}" target="_blank" class="block p-2 bg-zinc-950 rounded border border-zinc-800 break-all select-all cursor-pointer font-mono text-xs my-2 text-zinc-400 hover:text-zinc-300">${authUrl}</a>`;
                 const pastedUrl = await prompt(message);
 
                 if (pastedUrl) {
