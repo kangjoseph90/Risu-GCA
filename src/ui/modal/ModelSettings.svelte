@@ -30,14 +30,17 @@
 
     onMount(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownContainer && !dropdownContainer.contains(event.target as Node)) {
+            if (
+                dropdownContainer &&
+                !dropdownContainer.contains(event.target as Node)
+            ) {
                 isDropdownOpen = false;
             }
         };
 
-        window.addEventListener('click', handleClickOutside);
+        window.addEventListener("click", handleClickOutside);
         return () => {
-            window.removeEventListener('click', handleClickOutside);
+            window.removeEventListener("click", handleClickOutside);
         };
     });
 
@@ -82,7 +85,9 @@
 <div class="max-w-3xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
     <!-- Model Selection -->
     <div class="space-y-3">
-        <label for="model-config" class="block text-sm font-medium text-zinc-300"
+        <label
+            for="model-config"
+            class="block text-sm font-medium text-zinc-300"
             >Model Configuration</label
         >
         <div class="relative group" bind:this={dropdownContainer}>
@@ -109,7 +114,7 @@
                     type="text"
                     bind:value={currentModelId}
                     on:change={onConfigChange}
-                    on:focus={() => isDropdownOpen = true}
+                    on:focus={() => (isDropdownOpen = true)}
                     placeholder="e.g. gemini-2.5-pro"
                     class="w-full pl-10 pr-10 py-3 bg-[#252528] border border-zinc-700 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm"
                 />
@@ -119,7 +124,9 @@
                     on:click={toggleDropdown}
                 >
                     <svg
-                        class="h-5 w-5 transform transition-transform {isDropdownOpen ? 'rotate-180' : ''}"
+                        class="h-5 w-5 transform transition-transform {isDropdownOpen
+                            ? 'rotate-180'
+                            : ''}"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -143,27 +150,54 @@
                         {#each MODELS as model}
                             <button
                                 type="button"
-                                class="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-blue-600/20 hover:text-white transition-colors flex items-center justify-between {currentModelId === model ? 'bg-blue-600/10 text-blue-400 font-medium' : ''}"
+                                class="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-blue-600/20 hover:text-white transition-colors flex items-center justify-between {currentModelId ===
+                                model
+                                    ? 'bg-blue-600/10 text-blue-400 font-medium'
+                                    : ''}"
                                 on:click={() => selectModel(model)}
                             >
                                 <span>{model}</span>
                                 {#if currentModelId === model}
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    <svg
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
                                     </svg>
                                 {/if}
                             </button>
                         {/each}
                         {#if !MODELS.includes(currentModelId) && currentModelId}
                             <div class="border-t border-zinc-700/50 my-1"></div>
-                            <div class="px-4 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Custom Model</div>
+                            <div
+                                class="px-4 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"
+                            >
+                                Custom Model
+                            </div>
                             <button
                                 type="button"
                                 class="w-full px-4 py-2 text-left text-sm text-blue-400 bg-blue-600/10 font-medium flex items-center gap-2"
-                                on:click={() => isDropdownOpen = false}
+                                on:click={() => (isDropdownOpen = false)}
                             >
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                <svg
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 4v16m8-8H4"
+                                    />
                                 </svg>
                                 <span>{currentModelId}</span>
                             </button>
@@ -204,7 +238,9 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label for="temperature-toggle" class="text-sm font-medium text-zinc-300"
+                        <label
+                            for="temperature-toggle"
+                            class="text-sm font-medium text-zinc-300"
                             >Temperature</label
                         >
                         <!-- Toggle -->
@@ -259,7 +295,9 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label for="top-p-toggle" class="text-sm font-medium text-zinc-300"
+                        <label
+                            for="top-p-toggle"
+                            class="text-sm font-medium text-zinc-300"
                             >Top P</label
                         >
                         <!-- Toggle -->
@@ -311,7 +349,9 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <label for="min-p-toggle" class="text-sm font-medium text-zinc-300"
+                        <label
+                            for="min-p-toggle"
+                            class="text-sm font-medium text-zinc-300"
                             >Min P</label
                         >
                         <!-- Toggle -->
@@ -363,7 +403,9 @@
         <!-- Top K -->
         <div class="space-y-2">
             <div class="flex justify-between">
-                <label for="top-k" class="text-sm font-medium text-zinc-300">Top K</label>
+                <label for="top-k" class="text-sm font-medium text-zinc-300"
+                    >Top K</label
+                >
             </div>
             <input
                 id="top-k"
@@ -377,7 +419,9 @@
         <!-- Penalties -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="space-y-2">
-                <label for="frequency-penalty" class="text-sm font-medium text-zinc-300"
+                <label
+                    for="frequency-penalty"
+                    class="text-sm font-medium text-zinc-300"
                     >Frequency Penalty</label
                 >
                 <input
@@ -390,7 +434,9 @@
                 />
             </div>
             <div class="space-y-2">
-                <label for="presence-penalty" class="text-sm font-medium text-zinc-300"
+                <label
+                    for="presence-penalty"
+                    class="text-sm font-medium text-zinc-300"
                     >Presence Penalty</label
                 >
                 <input
@@ -403,7 +449,9 @@
                 />
             </div>
             <div class="space-y-2">
-                <label for="repetition-penalty" class="text-sm font-medium text-zinc-300"
+                <label
+                    for="repetition-penalty"
+                    class="text-sm font-medium text-zinc-300"
                     >Repetition Penalty</label
                 >
                 <input
@@ -436,7 +484,9 @@
                             d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                         />
                     </svg>
-                    <label for="thinking-mode" class="text-sm font-medium text-zinc-200"
+                    <label
+                        for="thinking-mode"
+                        class="text-sm font-medium text-zinc-200"
                         >Thinking Configuration</label
                     >
                 </div>
@@ -488,7 +538,9 @@
 
         <!-- Media Resolution -->
         <div class="space-y-2">
-            <label for="media-resolution" class="text-sm font-medium text-zinc-300"
+            <label
+                for="media-resolution"
+                class="text-sm font-medium text-zinc-300"
                 >Media Resolution</label
             >
             <select
@@ -503,5 +555,23 @@
                 <option value="media_resolution_high">High</option>
             </select>
         </div>
+    </div>
+
+    <!-- Active Tool -->
+    <div class="space-y-2">
+        <label for="active-tool" class="text-sm font-medium text-zinc-300"
+            >Active Tool</label
+        >
+        <select
+            id="active-tool"
+            bind:value={currentParams.active_tool}
+            on:change={onConfigChange}
+            class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
+        >
+            <option value={undefined}>None</option>
+            <option value="google_search">Google Search</option>
+            <option value="googleMaps">Google Maps</option>
+            <option value="url_context">URL Context</option>
+        </select>
     </div>
 </div>

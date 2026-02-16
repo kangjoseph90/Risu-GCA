@@ -24,13 +24,24 @@ export async function handleRequest(args: PluginV2ProviderArgument, abortSignal?
     const contents = parseGeminiChat(args.prompt_chat);
     const generationConfig = getGenerationConfig(newParams);
     const safetySettings = getSafetySettings();
+    const activeTool = newParams.active_tool;
+    const tools: any[] = [];
+
+    if (activeTool === 'google_search') {
+        tools.push({ google_search: {} });
+    } else if (activeTool === 'googleMaps') {
+        tools.push({ googleMaps: {} });
+    } else if (activeTool === 'url_context') {
+        tools.push({ url_context: {} });
+    }
 
     const body = {
         model: model,
         request: {
             contents: contents,
             generationConfig: generationConfig,
-            safetySettings: safetySettings
+            safetySettings: safetySettings,
+            tools
         }
     }
 
