@@ -143,7 +143,6 @@
 
             {#if isDropdownOpen}
                 <div
-                    transition:slide={{ duration: 200, easing: quintOut }}
                     class="absolute z-50 mt-2 w-full bg-[#2a2a2e] border border-zinc-700 rounded-xl shadow-xl overflow-hidden"
                 >
                     <div class="max-h-60 overflow-y-auto py-1">
