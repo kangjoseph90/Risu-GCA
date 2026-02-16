@@ -24,15 +24,20 @@ export async function handleRequest(args: PluginV2ProviderArgument, abortSignal?
     const contents = parseGeminiChat(args.prompt_chat);
     const generationConfig = getGenerationConfig(newParams);
     const safetySettings = getSafetySettings();
-    const activeTool = newParams.active_tool;
+    const activeTools = newParams.active_tools || [];
     const tools: any[] = [];
 
-    if (activeTool === 'google_search') {
+    if (activeTools.includes('google_search')) {
         tools.push({ google_search: {} });
-    } else if (activeTool === 'googleMaps') {
+    }
+    if (activeTools.includes('googleMaps')) {
         tools.push({ googleMaps: {} });
-    } else if (activeTool === 'url_context') {
+    }
+    if (activeTools.includes('url_context')) {
         tools.push({ url_context: {} });
+    }
+    if (activeTools.includes('code_execution')) {
+        tools.push({ code_execution: {} });
     }
 
     const body = {

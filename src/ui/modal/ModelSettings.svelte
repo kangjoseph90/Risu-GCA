@@ -80,6 +80,18 @@
         thinkingMode = mode;
         onConfigChange();
     }
+
+    function toggleTool(
+        tool: "google_search" | "googleMaps" | "url_context" | "code_execution",
+    ) {
+        const tools = currentParams.active_tools ?? [];
+        if (tools.includes(tool)) {
+            currentParams.active_tools = tools.filter((t) => t !== tool);
+        } else {
+            currentParams.active_tools = [...tools, tool];
+        }
+        onConfigChange();
+    }
 </script>
 
 <div class="max-w-3xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
@@ -571,22 +583,122 @@
             </select>
         </div>
 
-        <!-- Active Tool -->
-        <div class="space-y-2">
-            <label for="active-tool" class="text-sm font-medium text-zinc-300"
-                >Active Tool</label
+        <!-- Active Tools -->
+        <div class="space-y-3">
+            <label
+                for="active-tools"
+                class="block text-sm font-medium text-zinc-300"
+                >Active Tools</label
             >
-            <select
-                id="active-tool"
-                bind:value={currentParams.active_tool}
-                on:change={onConfigChange}
-                class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
-            >
-                <option value={undefined}>None</option>
-                <option value="google_search">Google Search</option>
-                <option value="googleMaps">Google Maps</option>
-                <option value="url_context">URL Context</option>
-            </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Google Search -->
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm"
+                >
+                    <span class="text-sm font-medium text-zinc-200"
+                        >Google Search</span
+                    >
+                    <button
+                        type="button"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.active_tools?.includes(
+                            'google_search',
+                        )
+                            ? 'bg-blue-600'
+                            : 'bg-zinc-700'}"
+                        on:click={() => toggleTool("google_search")}
+                    >
+                        <span class="sr-only">Toggle Google Search</span>
+                        <span
+                            class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm {currentParams.active_tools?.includes(
+                                'google_search',
+                            )
+                                ? 'translate-x-6'
+                                : 'translate-x-1'}"
+                        />
+                    </button>
+                </div>
+
+                <!-- Google Maps -->
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm"
+                >
+                    <span class="text-sm font-medium text-zinc-200"
+                        >Google Maps</span
+                    >
+                    <button
+                        type="button"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.active_tools?.includes(
+                            'googleMaps',
+                        )
+                            ? 'bg-blue-600'
+                            : 'bg-zinc-700'}"
+                        on:click={() => toggleTool("googleMaps")}
+                    >
+                        <span class="sr-only">Toggle Google Maps</span>
+                        <span
+                            class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm {currentParams.active_tools?.includes(
+                                'googleMaps',
+                            )
+                                ? 'translate-x-6'
+                                : 'translate-x-1'}"
+                        />
+                    </button>
+                </div>
+
+                <!-- URL Context -->
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm"
+                >
+                    <span class="text-sm font-medium text-zinc-200"
+                        >URL Context</span
+                    >
+                    <button
+                        type="button"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.active_tools?.includes(
+                            'url_context',
+                        )
+                            ? 'bg-blue-600'
+                            : 'bg-zinc-700'}"
+                        on:click={() => toggleTool("url_context")}
+                    >
+                        <span class="sr-only">Toggle URL Context</span>
+                        <span
+                            class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm {currentParams.active_tools?.includes(
+                                'url_context',
+                            )
+                                ? 'translate-x-6'
+                                : 'translate-x-1'}"
+                        />
+                    </button>
+                </div>
+
+                <!-- Code Execution -->
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm"
+                >
+                    <span class="text-sm font-medium text-zinc-200"
+                        >Code Execution</span
+                    >
+                    <button
+                        type="button"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 {currentParams.active_tools?.includes(
+                            'code_execution',
+                        )
+                            ? 'bg-blue-600'
+                            : 'bg-zinc-700'}"
+                        on:click={() => toggleTool("code_execution")}
+                    >
+                        <span class="sr-only">Toggle Code Execution</span>
+                        <span
+                            class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm {currentParams.active_tools?.includes(
+                                'code_execution',
+                            )
+                                ? 'translate-x-6'
+                                : 'translate-x-1'}"
+                        />
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

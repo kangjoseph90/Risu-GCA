@@ -24,6 +24,6 @@ export interface ModelParameters extends PluginParameters {
     media_resolution?: 'media_resolution_low' | 'media_resolution_medium' | 'media_resolution_high'
     stop_sequences?: string[]
     use_stream?: boolean
-    active_tool?: 'google_search' | 'googleMaps' | 'url_context'
+    active_tools?: ('google_search' | 'googleMaps' | 'url_context' | 'code_execution')[]
     seed?: number
 }
