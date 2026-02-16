@@ -51,6 +51,8 @@ function generateRisuHeader(pluginConfig: string): string {
   // 디스플레이 이름 (선택)
   lines.push(`//@display-name ${title}`);
   
+  lines.push('//@api 2.1');
+
   // RISU_ARGS에서 인자 추출
   const argsMatch = pluginConfig.match(/const\s+RISU_ARGS[^{]*\{([\s\S]*?)\}/);
   if (argsMatch) {
