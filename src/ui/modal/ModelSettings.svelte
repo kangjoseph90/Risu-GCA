@@ -415,6 +415,22 @@
             />
         </div>
 
+        <!-- Seed -->
+        <div class="space-y-2">
+            <div class="flex justify-between">
+                <label for="seed" class="text-sm font-medium text-zinc-300"
+                    >Seed</label
+                >
+            </div>
+            <input
+                id="seed"
+                type="number"
+                bind:value={currentParams.seed}
+                on:change={onConfigChange}
+                class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
+            />
+        </div>
+
         <!-- Penalties -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="space-y-2">

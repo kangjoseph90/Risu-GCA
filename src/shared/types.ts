@@ -25,4 +25,5 @@ export interface ModelParameters extends PluginParameters {
     stop_sequences?: string[]
     use_stream?: boolean
     active_tool?: 'google_search' | 'googleMaps' | 'url_context'
+    seed?: number
 }

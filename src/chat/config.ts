@@ -36,6 +36,7 @@ export function getGenerationConfig(params: ModelParameters): any {
     if (params.top_p) generationConfig.topP = params.top_p;
     if (params.temperature) generationConfig.temperature = params.temperature;
     if (params.max_tokens) generationConfig.maxOutputTokens = params.max_tokens;
+    if (params.seed !== undefined) generationConfig.seed = params.seed;
 
     generationConfig.thinkingConfig = { includeThoughts: true };
     if (params.thinking_level) generationConfig.thinkingConfig.thinkingLevel = params.thinking_level;
