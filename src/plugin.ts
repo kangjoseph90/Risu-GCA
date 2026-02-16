@@ -25,7 +25,7 @@ interface RisuArgs {
 
 // Plugin Info
 const PLUGIN_TITLE = 'risu-gca'
-const PLUGIN_VERSION = 'v0.2.1'
+const PLUGIN_VERSION = 'v0.2.2'
 const PLUGIN_NAME = `${PLUGIN_TITLE}-${PLUGIN_VERSION}`
 
 // Argument Name Definitions
