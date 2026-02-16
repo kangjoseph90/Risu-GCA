@@ -555,23 +555,23 @@
                 <option value="media_resolution_high">High</option>
             </select>
         </div>
-    </div>
 
-    <!-- Active Tool -->
-    <div class="space-y-2">
-        <label for="active-tool" class="text-sm font-medium text-zinc-300"
-            >Active Tool</label
-        >
-        <select
-            id="active-tool"
-            bind:value={currentParams.active_tool}
-            on:change={onConfigChange}
-            class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
-        >
-            <option value={undefined}>None</option>
-            <option value="google_search">Google Search</option>
-            <option value="googleMaps">Google Maps</option>
-            <option value="url_context">URL Context</option>
-        </select>
+        <!-- Active Tool -->
+        <div class="space-y-2">
+            <label for="active-tool" class="text-sm font-medium text-zinc-300"
+                >Active Tool</label
+            >
+            <select
+                id="active-tool"
+                bind:value={currentParams.active_tool}
+                on:change={onConfigChange}
+                class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
+            >
+                <option value={undefined}>None</option>
+                <option value="google_search">Google Search</option>
+                <option value="googleMaps">Google Maps</option>
+                <option value="url_context">URL Context</option>
+            </select>
+        </div>
     </div>
 </div>
