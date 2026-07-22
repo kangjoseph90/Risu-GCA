@@ -1,52 +1,17 @@
 <script lang="ts">
-    import { createEventDispatcher, onMount } from "svelte";
+    import { createEventDispatcher } from "svelte";
     import type { ModelParameters } from "../../shared/types";
-  import { MODELS } from "../../model/list";
+    import { MODELS } from "../../model/list";
 
     export let currentModelId: string = "";
     export let currentParams: ModelParameters = {};
     export let thinkingMode: "level" | "tokens" = "level";
 
     const dispatch = createEventDispatcher();
-    let isDropdownOpen = false;
-    let dropdownContainer: HTMLDivElement;
-
-    $: currentModel = MODELS.find(m => m.id === currentModelId) || {
-        id: currentModelId,
-        displayName: currentModelId || "Select a model"
-    };
 
     function onConfigChange() {
         dispatch("saveConfig");
     }
-
-    function toggleDropdown(e: MouseEvent) {
-        e.stopPropagation();
-        isDropdownOpen = !isDropdownOpen;
-    }
-
-    function selectModel(model: string) {
-        currentModelId = model;
-        isDropdownOpen = false;
-        onConfigChange();
-    }
-
-    onMount(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                dropdownContainer &&
-                !dropdownContainer.contains(event.target as Node)
-            ) {
-                isDropdownOpen = false;
-            }
-        };
-
-        window.addEventListener("click", handleClickOutside);
-
-        return () => {
-            window.removeEventListener("click", handleClickOutside);
-        };
-    });
 
     function toggleStream() {
         currentParams.use_stream = !currentParams.use_stream;
@@ -106,92 +71,16 @@
             class="block text-sm font-medium text-zinc-300"
             >Model Configuration</label
         >
-        <div class="relative group" bind:this={dropdownContainer}>
-            <div
-                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10"
-            >
-                <svg
-                    class="h-5 w-5 text-zinc-500 group-focus-within:text-blue-500 transition-colors"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                </svg>
-            </div>
-            <div class="relative">
-                <button
-                    id="model-config"
-                    type="button"
-                    on:click={toggleDropdown}
-                    class="w-full pl-10 pr-10 py-3 bg-[#252528] border border-zinc-700 rounded-xl text-left text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm flex items-center justify-between"
-                >
-                    <span>{currentModel.displayName}</span>
-                </button>
-                <button
-                    type="button"
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                    on:click={toggleDropdown}
-                >
-                    <svg
-                        class="h-5 w-5 transform transition-transform {isDropdownOpen
-                            ? 'rotate-180'
-                            : ''}"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 9l-7 7-7-7"
-                        />
-                    </svg>
-                </button>
-            </div>
-
-            {#if isDropdownOpen}
-                <div
-                    class="absolute z-50 mt-2 w-full bg-[#2a2a2e] border border-zinc-700 rounded-xl shadow-xl overflow-hidden"
-                >
-                    <div class="max-h-60 overflow-y-auto py-1">
-                        {#each MODELS as model}
-                            <button
-                                type="button"
-                                class="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-blue-600/20 hover:text-white transition-colors flex items-center justify-between {currentModelId ===
-                                model.id
-                                    ? 'bg-blue-600/10 text-blue-400 font-medium'
-                                    : ''}"
-                                on:click={() => selectModel(model.id)}
-                            >
-                                <span>{model.displayName}</span>
-                                {#if currentModelId === model.id}
-                                    <svg
-                                        class="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
-                                    </svg>
-                                {/if}
-                            </button>
-                        {/each}
-                    </div>
-                </div>
-            {/if}
-        </div>
+        <select
+            id="model-config"
+            bind:value={currentModelId}
+            on:change={onConfigChange}
+            class="w-full px-4 py-2.5 bg-[#252528] border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors"
+        >
+            {#each MODELS as model}
+                <option value={model.id}>{model.displayName}</option>
+            {/each}
+        </select>
     </div>
 
     <!-- Parameters -->
