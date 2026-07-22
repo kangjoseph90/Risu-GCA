@@ -5,6 +5,7 @@ export interface Model {
 
 export const MODELS: Model[] = [
     { id: "gemini-3-flash", displayName: "Gemini 3 Flash" },
+    { id: "gemini-3.6-flash-tiered", displayName: "Gemini 3.6 Flash"},
     { id: "gemini-3.5-flash-extra-low", displayName: "Gemini 3.5 Flash (Low)" },
     { id: "gemini-3.5-flash-low", displayName: "Gemini 3.5 Flash (Medium)" },
     { id: "gemini-3-flash-agent", displayName: "Gemini 3.5 Flash (High)" },
