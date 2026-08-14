@@ -5,6 +5,8 @@ import { PROJECT_ID, SERVICE_TIER, OPT_OUT, CREDIT_OVERAGE } from '../plugin';
 import { Logger } from '../shared/logger';
 import { eventEmitter, AppEvent } from '../shared/events';
 
+const ANTIGRAVITY_ENDPOINT = 'https://daily-cloudcode-pa.googleapis.com/v1internal';
+
 export class AntigravityManager {
     private static projectId: string | undefined;
     private static serviceTier: string | undefined;
@@ -58,7 +60,7 @@ export class AntigravityManager {
         const loadData = await this.fetchAntigravity('loadCodeAssist', {
             metadata: {
                 ide_type: 'ANTIGRAVITY',
-                ide_version: '2.0.4',
+                ide_version: '2.5.5',
                 ide_name: 'antigravity',
             }
         });
@@ -76,7 +78,7 @@ export class AntigravityManager {
                 tier_id: tierId,
                 metadata: {
                     ide_type: 'ANTIGRAVITY',
-                    ide_version: '2.0.4',
+                    ide_version: '2.5.5',
                     ide_name: 'antigravity',
                 },
             };
@@ -136,69 +138,63 @@ export class AntigravityManager {
         this.optOut = undefined;
     }
 
-    static async fetchAvailableModels(): Promise<any> {
-        const projectId = await this.ensureInitialized();
-        return this.fetchAntigravity('fetchAvailableModels', { project: projectId });
-    }
-
     static async loadAccountData(): Promise<any> {
         return this.fetchAntigravity('loadCodeAssist', {
             metadata: {
                 ide_type: 'ANTIGRAVITY',
-                ide_version: '2.0.4',
+                ide_version: '2.5.5',
                 ide_name: 'antigravity',
             }
         });
     }
 
-    // Helper for fetch with Auth
-    private static async fetchAntigravity(path: string, body: any, method: string = 'POST'): Promise<any> {
-        const endpoints = [
-            'https://cloudcode-pa.googleapis.com/v1internal',
-            'https://daily-cloudcode-pa.googleapis.com/v1internal'
-        ];
+    static async fetchUserQuotaSummary(): Promise<any> {
+        const projectId = await this.ensureInitialized();
         const token = await AuthManager.getAccessToken();
         const headers = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'X-Client-Name': 'antigravity',
-            'X-Client-Version': '2.0.4',
+            'User-Agent': 'antigravity/ide/2.5.5 (aidev_client; os_type=windows; arch=amd64)',
+        };
+        const url = `${ANTIGRAVITY_ENDPOINT}:retrieveUserQuotaSummary`;
+        const res = await RisuAPI.risuFetch(url, {
+            method: 'POST',
+            headers,
+            body: { project: projectId },
+        });
+        if (!res.ok) {
+            throw new Error(`Antigravity API Error (${res.status}): ${typeof res.data === 'string' ? res.data : JSON.stringify(res.data)}`);
+        }
+        return res.data;
+    }
+
+    // Helper for fetch with Auth (node-style headers for account management)
+    private static async fetchAntigravity(path: string, body: any, method: string = 'POST'): Promise<any> {
+        const token = await AuthManager.getAccessToken();
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'antigravity/2.5.5 windows/amd64 google-api-nodejs-client/10.3.0',
             'x-goog-api-client': 'gl-node/22.21.1',
-            'User-Agent': 'antigravity/2.0.4 windows/amd64 google-api-nodejs-client/10.3.0',
         };
 
-        let lastError: any;
-        for (const endpoint of endpoints) {
-            try {
-                const url = `${endpoint}:${path}`;
-                const res = await RisuAPI.risuFetch(url, {
-                    method: method as any,
-                    headers,
-                    body: body
-                });
-                if (!res.ok) {
-                    throw new Error(`Antigravity API Error (${res.status}): ${typeof res.data === 'string' ? res.data : JSON.stringify(res.data)}`);
-                }
-                return res.data;
-            } catch (e) {
-                lastError = e;
-            }
+        const url = `${ANTIGRAVITY_ENDPOINT}:${path}`;
+        const res = await RisuAPI.risuFetch(url, {
+            method: method as any,
+            headers,
+            body: body
+        });
+        if (!res.ok) {
+            throw new Error(`Antigravity API Error (${res.status}): ${typeof res.data === 'string' ? res.data : JSON.stringify(res.data)}`);
         }
-        throw lastError || new Error('Antigravity fetch failed');
+        return res.data;
     }
 
     static async nativeFetchAntigravity(path: string, args: NativeFetchArgs): Promise<Response> {
-        const endpoints = [
-            'https://cloudcode-pa.googleapis.com/v1internal',
-            'https://daily-cloudcode-pa.googleapis.com/v1internal'
-        ];
         const token = await AuthManager.getAccessToken();
         const headers = { ...args.headers };
         headers['Authorization'] = `Bearer ${token}`;
-        headers['X-Client-Name'] = 'antigravity';
-        headers['X-Client-Version'] = '2.0.4';
-        headers['x-goog-api-client'] = 'gl-node/22.21.1';
-        headers['User-Agent'] = 'antigravity/2.0.4 windows/amd64 google-api-nodejs-client/10.3.0';
+        headers['User-Agent'] = 'antigravity/ide/2.5.5 (aidev_client; os_type=windows; arch=amd64)';
 
         let body = args.body;
 
@@ -218,34 +214,19 @@ export class AntigravityManager {
             Logger.warn('Cannot inject project ID into non-string body');
         }
 
-        let lastError: any;
-        for (const endpoint of endpoints) {
-            try {
-                const url = `${endpoint}:${path}`;
-                return await RisuAPI.nativeFetch(url, {
-                    ...args,
-                    body,
-                    headers
-                });
-            } catch (e) {
-                lastError = e;
-            }
-        }
-        throw lastError || new Error('Antigravity nativeFetch failed');
+        const url = `${ANTIGRAVITY_ENDPOINT}:${path}`;
+        return await RisuAPI.nativeFetch(url, {
+            ...args,
+            body,
+            headers
+        });
     }
 
     static async risuFetchAntigravity(path: string, args: GlobalFetchArgs = {}): Promise<GlobalFetchResult> {
-        const endpoints = [
-            'https://cloudcode-pa.googleapis.com/v1internal',
-            'https://daily-cloudcode-pa.googleapis.com/v1internal'
-        ];
         const token = await AuthManager.getAccessToken();
         const headers = { ...args.headers };
         headers['Authorization'] = `Bearer ${token}`;
-        headers['X-Client-Name'] = 'antigravity';
-        headers['X-Client-Version'] = '2.0.4';
-        headers['x-goog-api-client'] = 'gl-node/22.21.1';
-        headers['User-Agent'] = 'antigravity/2.0.4 windows/amd64 google-api-nodejs-client/10.3.0';
+        headers['User-Agent'] = 'antigravity/ide/2.5.5 (aidev_client; os_type=windows; arch=amd64)';
 
         let body = args.body;
 
@@ -262,19 +243,11 @@ export class AntigravityManager {
             Logger.warn('Cannot inject project ID into non-object body');
         }
 
-        let lastError: any;
-        for (const endpoint of endpoints) {
-            try {
-                const url = `${endpoint}:${path}`;
-                return await RisuAPI.risuFetch(url, {
-                    ...args,
-                    body,
-                    headers
-                });
-            } catch (e) {
-                lastError = e;
-            }
-        }
-        throw lastError || new Error('Antigravity risuFetch failed');
+        const url = `${ANTIGRAVITY_ENDPOINT}:${path}`;
+        return await RisuAPI.risuFetch(url, {
+            ...args,
+            body,
+            headers
+        });
     }
 }

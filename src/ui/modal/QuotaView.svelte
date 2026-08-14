@@ -2,21 +2,26 @@
     import { onMount, createEventDispatcher } from "svelte";
     import { AntigravityManager } from "../../antigravity";
     import { Logger } from "../../shared/logger";
-    import { MODELS } from "../../model/list";
     import { RisuAPI } from "../../api";
     import { CREDIT_OVERAGE } from "../../plugin";
 
     const dispatch = createEventDispatcher();
 
-    interface ModelQuota {
-        id: string;
+    interface QuotaBucket {
+        window: string;
         displayName: string;
         remainingFraction: number;
         resetTime: string;
     }
 
+    interface QuotaGroup {
+        displayName: string;
+        description: string;
+        buckets: QuotaBucket[];
+    }
+
     let credits: number = 0;
-    let modelQuotas: ModelQuota[] = [];
+    let quotaGroups: QuotaGroup[] = [];
     let isLoading = true;
     let error = "";
     let isOverageEnabled = false;
@@ -60,13 +65,25 @@
         return "bg-red-500/10";
     }
 
+    function bucketLabel(window: string): string {
+        if (window === "weekly") return "Weekly Limit";
+        if (window === "5h") return "5-Hour Limit";
+        return window;
+    }
+
+    function bucketOrder(window: string): number {
+        if (window === "weekly") return 0;
+        if (window === "5h") return 1;
+        return 2;
+    }
+
     async function loadQuotaData() {
         isLoading = true;
         error = "";
 
         try {
-            const [modelsRes, accountRes] = await Promise.all([
-                AntigravityManager.fetchAvailableModels(),
+            const [quotaRes, accountRes] = await Promise.all([
+                AntigravityManager.fetchUserQuotaSummary(),
                 AntigravityManager.loadAccountData(),
             ]);
 
@@ -78,24 +95,21 @@
                 credits = 0;
             }
 
-            // Parse model quotas
-            const models = modelsRes?.models || {};
-            modelQuotas = Object.entries(models)
-                .filter(([id, data]: [string, any]) => data?.quotaInfo && MODELS.some(m => m.id === id))
-                .map(([id, data]: [string, any]) => {
-                    const localModel = MODELS.find(m => m.id === id);
-                    return {
-                        id,
-                        displayName: localModel?.displayName || data.displayName || id,
-                        remainingFraction: data.quotaInfo?.remainingFraction ?? 0,
-                        resetTime: data.quotaInfo?.resetTime || "",
-                    };
-                })
-                .sort((a, b) => {
-                    const idxA = MODELS.findIndex(m => m.id === a.id);
-                    const idxB = MODELS.findIndex(m => m.id === b.id);
-                    return idxA - idxB;
-                });
+            // Parse quota groups
+            const groups = quotaRes?.groups || [];
+            quotaGroups = groups
+                .map((g: any) => ({
+                    displayName: g.displayName || "",
+                    description: g.description || "",
+                    buckets: ((g.buckets || []) as any[])
+                        .map((b) => ({
+                            window: b.window || "",
+                            displayName: b.displayName || "",
+                            remainingFraction: b.remainingFraction ?? 0,
+                            resetTime: b.resetTime || "",
+                        }))
+                        .sort((a, b) => bucketOrder(a.window) - bucketOrder(b.window)),
+                }));
         } catch (e) {
             Logger.error("Failed to load quota data", e);
             error = "Failed to load quota data. Please try again.";
@@ -201,13 +215,13 @@
         </button>
     </div>
 
-    <!-- Model Quotas -->
+    <!-- Quota Groups -->
     <div class="space-y-3">
-        <h4 class="text-sm font-medium text-zinc-400 uppercase tracking-wider">Model Quotas</h4>
+        <h4 class="text-sm font-medium text-zinc-400 uppercase tracking-wider">Usage Limits</h4>
 
-        {#if isLoading && modelQuotas.length === 0}
+        {#if isLoading && quotaGroups.length === 0}
             <div class="space-y-3">
-                {#each [1, 2, 3] as _}
+                {#each [1, 2] as _}
                     <div class="px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 animate-pulse">
                         <div class="h-4 bg-zinc-700 rounded w-1/3 mb-3"></div>
                         <div class="h-2 bg-zinc-700 rounded w-full mb-2"></div>
@@ -215,34 +229,44 @@
                     </div>
                 {/each}
             </div>
-        {:else if modelQuotas.length === 0 && !isLoading}
+        {:else if quotaGroups.length === 0 && !isLoading}
             <div class="px-4 py-6 bg-[#252528] rounded-xl border border-zinc-800 text-center text-zinc-500 text-sm">
                 No quota data available.
             </div>
         {:else}
-            {#each modelQuotas as quota}
-                <div class="px-4 py-3 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-zinc-200">{quota.displayName}</span>
-                        <span class="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
-                            {Math.round(quota.remainingFraction * 100)}%
-                        </span>
+            {#each quotaGroups as group}
+                <div class="px-4 py-4 bg-[#252528] rounded-xl border border-zinc-800 shadow-sm space-y-4">
+                    <div>
+                        <span class="text-sm font-semibold text-zinc-100">{group.displayName}</span>
+                        {#if group.description}
+                            <p class="text-xs text-zinc-500 mt-0.5">{group.description}</p>
+                        {/if}
                     </div>
-                    <!-- Progress Bar -->
-                    <div class="w-full h-2 rounded-full {getBarBgColor(quota.remainingFraction)} overflow-hidden">
-                        <div
-                            class="h-full rounded-full transition-all duration-500 {getBarColor(quota.remainingFraction)}"
-                            style="width: {Math.round(quota.remainingFraction * 100)}%"
-                        ></div>
-                    </div>
-                    <!-- Reset Time -->
-                    <div class="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Resets in {formatResetTime(quota.resetTime)}
-                    </div>
+                    {#each group.buckets as bucket}
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-zinc-200">{bucketLabel(bucket.window)}</span>
+                                <span class="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
+                                    {Math.round(bucket.remainingFraction * 100)}%
+                                </span>
+                            </div>
+                            <!-- Progress Bar -->
+                            <div class="w-full h-2 rounded-full {getBarBgColor(bucket.remainingFraction)} overflow-hidden">
+                                <div
+                                    class="h-full rounded-full transition-all duration-500 {getBarColor(bucket.remainingFraction)}"
+                                    style="width: {Math.round(bucket.remainingFraction * 100)}%"
+                                ></div>
+                            </div>
+                            <!-- Reset Time -->
+                            <div class="flex items-center gap-1.5 text-xs text-zinc-500">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Resets in {formatResetTime(bucket.resetTime)}
+                            </div>
+                        </div>
+                    {/each}
                 </div>
             {/each}
         {/if}
